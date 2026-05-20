@@ -1,5 +1,23 @@
+# dbt
+ipl_dbt/target/
+ipl_dbt/dbt_packages/
+ipl_dbt/logs/
+ipl_dbt/.user.yml
+
+# credentials
+*.json
+application_default_credentials.json
+service_account*.json
+
+# data files (too large for git)
+data/
+*.csv
+
+# python
 __pycache__/
 *.pyc
 .env
-venv/
-.ipynb_checkpoints/
+
+# logs
+logs/
+*.log

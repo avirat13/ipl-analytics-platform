@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_matches
+    description: "Cleaned matches — standardised column names, derived batting_first_team and toss_winner_won flags"
+    columns:
+      - name: match_id
+        description: "Unique match identifier"
+        tests:
+          - unique
+          - not_null
+      - name: season
+        tests:
+          - not_null
+      - name: winner
+        description: "Winning team — NULL if no result"
+      - name: toss_winner_won
+        description: "TRUE if toss winner also won the match"
+
+  - name: stg_deliveries
+    description: "Cleaned deliveries — 0-indexed overs converted to 1-indexed, NA strings replaced with NULL, derived phase and ball-type flags"
+    columns:
+      - name: delivery_id
+        description: "Unique delivery identifier"
+        tests:
+          - not_null
+      - name: match_id
+        tests:
+          - not_null
+      - name: match_phase
+        description: "powerplay / middle / death"
+        tests:
+          - accepted_values:
+              values: ['powerplay', 'middle', 'death']

@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: ipl_analytics
+    project: project-a1643e37-7258-4fbf-838
+    dataset: ipl_analytics
+    tables:
+      - name: matches_raw
+      - name: deliveries_raw
+      
