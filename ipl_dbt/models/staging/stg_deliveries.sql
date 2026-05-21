@@ -7,12 +7,13 @@ WITH source AS (
 cleaned AS (
     SELECT
         CONCAT(CAST(match_id AS STRING), '-',
-       CAST(inning AS STRING), '-',
-       CAST(batting_team AS STRING), '-',
-       CAST(ball AS STRING))                AS delivery_id,
+               CAST(inning AS STRING), '-',
+               CAST(source.`over` AS STRING), '-',
+               CAST(ball AS STRING))                AS delivery_id,
 
         match_id,
         inning,
+        source.`over` + 1                           AS over_num,
         ball,
         batting_team,
         bowling_team,
@@ -29,9 +30,9 @@ cleaned AS (
         NULLIF(fielder, 'NA')                       AS fielder,
 
         CASE
-            WHEN ball BETWEEN 1 AND 36 THEN 'powerplay'
-            WHEN ball BETWEEN 37 AND 90 THEN 'middle'
-            WHEN ball BETWEEN 91 AND 120 THEN 'death'
+            WHEN source.`over` BETWEEN 0  AND 5  THEN 'powerplay'
+            WHEN source.`over` BETWEEN 6  AND 14 THEN 'middle'
+            WHEN source.`over` BETWEEN 15 AND 19 THEN 'death'
         END                                         AS match_phase,
 
         CASE WHEN total_runs = 0 THEN TRUE ELSE FALSE END

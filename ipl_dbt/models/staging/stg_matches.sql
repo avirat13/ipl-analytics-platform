@@ -1,51 +1,49 @@
--- models/staging/stg_deliveries.sql
+-- models/staging/stg_matches.sql
+{{ config(materialized='table') }}
 
 WITH source AS (
-    SELECT * FROM {{ source('ipl_analytics', 'deliveries_raw') }}
+    SELECT * FROM {{ source('ipl_analytics', 'matches_raw') }}
 ),
 
 cleaned AS (
     SELECT
-        CONCAT(CAST(match_id AS STRING), '-',
-               CAST(inning AS STRING), '-',
-               CAST(`over` AS STRING), '-',
-               CAST(ball AS STRING))                AS delivery_id,
+        id                                          AS match_id,
+        CAST(SUBSTR(season, 1, 4) AS INT64)         AS season,
+        season                                      AS season_raw,
+        city,
+        date,
+        match_type,
+        venue,
+        team1,
+        team2,
+        toss_winner,
+        toss_decision,
+        NULLIF(winner, '')                          AS winner,
+        NULLIF(result, '')                          AS result,
+        SAFE_CAST(result_margin AS FLOAT64)         AS result_margin,
+        SAFE_CAST(target_runs AS INT64)             AS target_runs,
+        SAFE_CAST(target_overs AS FLOAT64)          AS target_overs,
+        super_over,
+        NULLIF(method, '')                          AS method,
+        player_of_match,
+        umpire1,
+        umpire2,
 
-        match_id,
-        inning,
-        `over` + 1                                  AS over_num,
-        ball,
-        batting_team,
-        bowling_team,
-        batter,
-        bowler,
-        non_striker,
-        batsman_runs,
-        extra_runs,
-        total_runs,
-        NULLIF(extras_type, '')                     AS extras_type,
-        is_wicket,
-        NULLIF(player_dismissed, 'NA')              AS player_dismissed,
-        NULLIF(dismissal_kind, 'NA')                AS dismissal_kind,
-        NULLIF(fielder, 'NA')                       AS fielder,
-
+        -- who batted first
         CASE
-            WHEN (`over` + 1) BETWEEN 1  AND 6  THEN 'powerplay'
-            WHEN (`over` + 1) BETWEEN 7  AND 15 THEN 'middle'
-            WHEN (`over` + 1) BETWEEN 16 AND 20 THEN 'death'
-        END                                         AS match_phase,
+            WHEN toss_decision = 'bat' THEN toss_winner
+            WHEN toss_decision = 'field' THEN
+                CASE
+                    WHEN toss_winner = team1 THEN team2
+                    ELSE team1
+                END
+        END                                         AS batting_first_team,
 
-        CASE WHEN total_runs = 0 THEN TRUE ELSE FALSE END
-                                                    AS is_dot_ball,
-
-        CASE WHEN batsman_runs IN (4, 6) THEN TRUE ELSE FALSE END
-                                                    AS is_boundary,
-
-        CASE WHEN batsman_runs = 6 THEN TRUE ELSE FALSE END
-                                                    AS is_six,
-
-        CASE WHEN batsman_runs = 4 THEN TRUE ELSE FALSE END
-                                                    AS is_four
+        -- did toss winner win
+        CASE
+            WHEN winner = toss_winner THEN TRUE
+            ELSE FALSE
+        END                                         AS toss_winner_won
 
     FROM source
 )
