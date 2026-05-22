@@ -8,7 +8,12 @@ WITH source AS (
 cleaned AS (
     SELECT
         id                                          AS match_id,
-        CAST(SUBSTR(season, 1, 4) AS INT64)         AS season,
+        CASE
+            WHEN season = '2020/21' THEN 2020
+            WHEN season LIKE '%/%'
+            THEN CAST(CONCAT('20', SUBSTR(season, 6, 2)) AS INT64)
+            ELSE CAST(season AS INT64)
+        END                                         AS season,
         season                                      AS season_raw,
         city,
         date,
