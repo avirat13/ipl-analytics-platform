@@ -31,4 +31,5 @@ models:
         description: "powerplay / middle / death"
         tests:
           - accepted_values:
-              values: ['powerplay', 'middle', 'death']
+              arguments:
+                values: ['powerplay', 'middle', 'death']
