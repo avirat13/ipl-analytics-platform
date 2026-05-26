@@ -1,13 +1,12 @@
-# 🏏 IPL Analytics Platform
+# IPL Analytics Platform
 
-An end-to-end cricket analytics system analyzing **260,920 ball-by-ball records** across **17 IPL seasons (2008–2024)**. Built with BigQuery, dbt, Power BI, and Looker Studio — covering death bowling efficiency, pressure batting, venue bias, partnerships, and a custom Value Above Replacement (VAR) metric.
+An end-to-end cricket analytics pipeline built on Google BigQuery and dbt, analyzing 260,920 ball-by-ball records across 17 IPL seasons. The project covers death bowling efficiency, pressure batting performance, venue bias, partnership analysis, and a custom Value Above Replacement (VAR) metric inspired by baseball's WAR statistic.
 
-## 🔗 Live Dashboard
-👉 [View Interactive Looker Studio Dashboard](https://datastudio.google.com/reporting/36c81911-d141-4c3f-bf8b-06d47acf2e8c)
+**Live dashboard**: https://datastudio.google.com/reporting/36c81911-d141-4c3f-bf8b-06d47acf2e8c
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Tool |
 |---|---|
@@ -15,164 +14,112 @@ An end-to-end cricket analytics system analyzing **260,920 ball-by-ball records*
 | Transformation | dbt (8 models, 6 tests) |
 | Visualisation | Power BI, Looker Studio |
 | Language | SQL |
-| Version Control | Git, GitHub |
 
 ---
 
-## 🏗 Pipeline Architecture
+## Pipeline Architecture
 
 ```
 Raw CSVs (Kaggle)
-      ↓
-Google BigQuery (matches_raw, deliveries_raw)
-      ↓
-dbt Staging Layer
-  ├── stg_matches       → cleaned match data
-  └── stg_deliveries    → cleaned ball-by-ball data
-      ↓
-dbt Intermediate Layer
-  └── int_match_context → enriched deliveries with pressure flags,
-                          running totals, wicket buckets, match phase
-      ↓
-dbt Mart Layer
-  ├── mart_death_bowling
-  ├── mart_pressure_batting
-  ├── mart_venue_bias
-  ├── mart_partnerships
-  └── mart_var
-      ↓
-Power BI + Looker Studio Dashboards
+      |
+Google BigQuery
+  matches_raw, deliveries_raw
+      |
+dbt Staging
+  stg_matches, stg_deliveries
+      |
+dbt Intermediate
+  int_match_context
+  (pressure flags, running totals, wicket buckets, match phase)
+      |
+dbt Mart
+  mart_death_bowling
+  mart_pressure_batting
+  mart_venue_bias
+  mart_partnerships
+  mart_var
+      |
+Power BI + Looker Studio
 ```
 
 ---
 
-## 📊 Dashboard Pages
+## Data Models
 
-| Page | Analysis | Key Visual |
+| Model | Description | Rows |
 |---|---|---|
-| Death Bowling | Economy rate leaderboard for death overs | Horizontal bar chart |
-| Pressure Batting | Strike rate in high-pressure vs normal situations | Dual clustered bar |
-| Venue Bias | Toss impact and batting conditions by venue | Clustered bar + pie charts |
-| Partnerships | Most productive batting pairs in IPL history | Stacked bar + contribution split |
-| VAR | Value Above Replacement — quality over volume | Column chart + line chart |
+| stg_matches | Cleaned match data, one row per match | 1,095 |
+| stg_deliveries | Cleaned ball-by-ball data | 260,920 |
+| int_match_context | Enriched deliveries with pressure flags, running totals, wicket buckets | 260,920 |
+| mart_death_bowling | Death over bowling leaderboard, minimum 300 balls | 62 |
+| mart_pressure_batting | Batting performance in pressure vs normal situations, minimum 200 pressure balls | 66 |
+| mart_venue_bias | Toss impact and batting conditions by venue, minimum 10 matches | 37 |
+| mart_partnerships | All-time partnership analysis, minimum 10 matches together | 265 |
+| mart_var | Value Above Replacement per batter per season, minimum 200 balls | 501 |
 
 ---
 
-## 🔑 Key Findings
+## Key Findings
 
-### Death Bowling
-- **SP Narine** ranks #1 in death economy at **7.4** — remarkable for a spinner beating elite pace bowlers
-- **JJ Bumrah** ranks only #6 at 8.17 — reflects higher-scoring modern IPL era he bowled in
-- **SL Malinga** #2 at 7.8 — historically the most dangerous death bowler
+**Death Bowling**
 
-### Pressure Batting
-- **N Pooran** has the highest pressure index — scores **174 under pressure vs 151 normally**
-- **V Kohli** pressure SR drops below his normal SR — volume scorer, not a clutch performer by this metric
-- Pressure defined as: chasing with required run rate > 10
+SP Narine ranks first in death economy at 7.4 — the only spinner in the top 10, outperforming elite pace bowlers. Bumrah ranks sixth at 8.17 despite his reputation, largely because he bowled in the higher-scoring modern era. Malinga ranks second at 7.8.
 
-### Venue Bias
-- **Mohali (PCA Stadium)** has the highest toss dependency at **70%** — winning toss almost guarantees a win
-- Majority of IPL venues are chase-friendly — captains have figured this out
-- **69% of toss winners** choose to field first across IPL history
+**Pressure Batting**
 
-### Partnerships
-- **AB de Villiers + V Kohli**: **3,134 runs** across **77 matches** at SR 152 — the most prolific partnership in IPL history
-- **V Kohli** appears in **3 of the top 4** partnerships — unmatched consistency as a partnership builder
-- **CH Gayle + V Kohli**: 2,802 runs — second highest despite Gayle's limited tenure at RCB
+Pressure is defined as any delivery where the chasing team's required run rate exceeds 10. N Pooran has the highest pressure index — scoring at 174 SR under pressure vs 151 normally. Kohli's strike rate drops below his normal average under pressure, suggesting his value comes from volume rather than clutch performance.
 
-### Value Above Replacement (VAR)
-- **AB de Villiers** ranked #1 by VAR in 2016 despite Kohli scoring more raw runs — VAR rewards quality over volume
-- **MS Dhoni** has negative career VAR — confirms the metric's limitation for finishers whose value lies in match awareness, not run-scoring above average
-- VAR formula: sum of (actual runs − average runs for that situation) across all balls faced
+**Venue Bias**
+
+Mohali has the highest toss dependency at 70% — winning the toss at this venue almost guarantees a match win. 69% of toss winners across IPL history chose to field first, confirming that captains broadly recognise chasing as an advantage.
+
+**Partnerships**
+
+Kohli + de Villiers: 3,134 runs across 77 matches at a strike rate of 152 — the most prolific partnership in IPL history. Kohli appears in three of the top four partnerships, no other batter comes close.
+
+**Value Above Replacement**
+
+AB de Villiers ranked first by VAR in 2016 despite Kohli scoring more raw runs — the metric rewards quality of performance over volume. MS Dhoni has a negative career VAR, confirming the metric's limitation for finishers whose value lies in match awareness and wicket preservation rather than outscoring the average.
 
 ---
 
-## 📁 Data Models
+## Metric Definitions
 
-| Model | Type | Description | Rows |
-|---|---|---|---|
-| `stg_matches` | Table | Cleaned match data — one row per match | 1,095 |
-| `stg_deliveries` | Table | Cleaned ball-by-ball data | 260,920 |
-| `int_match_context` | Table | Enriched deliveries with pressure flags, running totals, wicket buckets | 260,920 |
-| `mart_death_bowling` | Table | Death over bowling leaderboard (min 300 balls) | 62 |
-| `mart_pressure_batting` | Table | Pressure situation batting analysis (min 200 pressure balls) | 66 |
-| `mart_venue_bias` | Table | Venue toss and batting bias (min 10 matches) | 37 |
-| `mart_partnerships` | Table | All-time partnership analysis (min 10 matches together) | 265 |
-| `mart_var` | Table | Value Above Replacement per batter per season | 501 |
+**Match Phase**
+- Powerplay: overs 1 to 6
+- Middle: overs 7 to 15
+- Death: overs 16 to 20
 
----
+**Pressure Ball**
+A delivery is tagged as a pressure ball when the batting team is chasing and the required run rate exceeds 10.
 
-## 🧪 Data Quality Tests
+**Value Above Replacement**
+For every ball faced, the average runs scored by all IPL batters in that exact situation (same phase, wickets fallen, inning) is subtracted from the batter's actual runs. The differences are summed across a season or career. Positive VAR indicates outperformance; negative VAR indicates underperformance relative to the average.
 
-dbt tests run on every model refresh:
-
-| Test | Column | Model |
-|---|---|---|
-| `unique` | `match_id` | `stg_matches` |
-| `not_null` | `match_id` | `stg_matches` |
-| `not_null` | `season` | `stg_matches` |
-| `not_null` | `match_id` | `stg_deliveries` |
-| `not_null` | `delivery_id` | `stg_deliveries` |
-| `accepted_values` | `match_phase` | `stg_deliveries` |
-
----
-
-## 📐 Key Metric Definitions
-
-**Match Phase:**
-- Powerplay: overs 1–6
-- Middle: overs 7–15
-- Death: overs 16–20
-
-**Pressure Ball:**
-A delivery is tagged as a pressure ball when:
-- Inning = 2 (chasing team batting)
-- Required run rate > 10
-
-**Value Above Replacement (VAR):**
-For every ball faced, subtract the average runs scored by all IPL batters in that exact situation (same phase, wickets fallen, inning). Sum across a season or career.
-
-**Death Rating (composite):**
+**Death Rating (composite)**
 ```
-death_rating = (1 - economy/12) × 40 + (dot_ball_pct/100) × 35 + (wickets_per_over/1.5) × 25
+death_rating = (1 - economy/12) x 40 + (dot_ball_pct/100) x 35 + (wickets_per_over/1.5) x 25
 ```
 
 ---
 
-## 📋 Dataset Notes
+## Dataset Notes
 
-- **Source**: Kaggle IPL ball-by-ball dataset
-- **Seasons covered**: 17 of 19 IPL seasons
-- **Season labelling**: Seasons named by start year — 2007/08 → 2008, 2009/10 → 2010, 2020/21 → 2020
-- **Match types**: All tournament stages included (League, Qualifier, Eliminator, Final)
+Source: Kaggle IPL ball-by-ball dataset. Covers all 17 completed IPL seasons from 2008 to 2024. The 2025 season is excluded due to limited data availability and the 2026 season is currently in progress. Seasons are labelled by the year they began (2007/08 becomes 2008, 2009/10 becomes 2010, 2020/21 becomes 2020). All tournament stages are included: league matches, qualifiers, eliminators, and finals.
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
-**Prerequisites:**
-- Google Cloud account with BigQuery access
-- dbt 1.11+
-- Python 3.9+
+Prerequisites: Google Cloud account with BigQuery access, dbt 1.11 or later.
 
-**Setup:**
 ```bash
-# Clone the repo
 git clone https://github.com/avirat13/ipl-analytics-platform
 cd ipl-analytics-platform/ipl_dbt
 
-# Configure dbt profile
-# Add BigQuery credentials to ~/.dbt/profiles.yml
+# configure ~/.dbt/profiles.yml with BigQuery credentials
 
-# Run all models
 dbt run
-
-# Run tests
 dbt test
-
-# Generate docs
-dbt docs generate
-dbt docs serve
+dbt docs generate && dbt docs serve
 ```
-
----
